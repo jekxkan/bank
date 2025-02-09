@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+            width: 250px;
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Вы вошли как админ</h1>
+
+    <hr>
+
+    <div class="form-group">
+        <h2>Получить информацию о себе</h2>
+        <button id="getMyDataBtn">Получить</button>
+        <span id="myData"></span>
+    </div>
+
+    <hr>
+
+    <div class="form-group">
+        <h2>Создать пользователя</h2>
+        <label for="createUserEmail">Email:</label>
+        <input type="email" id="createUserEmail" required>
+        <label for="createUserPassword">Пароль:</label>
+        <input type="password" id="createUserPassword" required>
+        <label for="createUserFullName">ФИО:</label>
+        <input type="text" id="createUserFullName" required>
+        <button id="createUserBtn">Создать</button>
+    </div>
+
+    <hr>
+
+    <div class="form-group">
+        <h2>Удалить пользователя</h2>
+        <label for="deleteUserEmail">Email пользователя:</label>
+        <input type="text" id="deleteUserEmail" required>
+        <button id="deleteUserBtn">Удалить</button>
+    </div>
+
+    <hr>
+
+    <div class="form-group">
+        <h2>Обновить пользователя</h2>
+        <h3>Введите email пользователя, данные которого нужно изменить</h3>
+        <label for="UserEmail">Email:</label>
+        <input type="email" id="UserEmail" required>
+        <h3>Введите данные, которые хотите изменить</h3>
+        <label for="updateUserEmail">Email:</label>
+        <input type="email" id="updateUserEmail">
+        <label for="updateUserPassword">Пароль:</label>
+        <input type="password" id="updateUserPassword">
+        <label for="updateUserFullName">ФИО:</label>
+        <input type="text" id="updateUserFullName">
+        <button id="updateUserBtn">Обновить</button>
+    </div>
+
+    <hr>
+
+      <div class="form-group">
+          <h2>Получить список всех пользователей</h2>
+          <button id="getAllUsers">Получить</button>
+          <button id="hideUsersBtn">Скрыть</button>
+          <span id="usersList"></span>
+      </div>
+
+      <hr>
+
+    <div class="form-group">
+        <h2>Получить список счетов пользователя</h2>
+        <label for="getAccountsUserEmail">Email пользователя:</label>
+        <input type="text" id="getAccountsUserEmail" required>
+        <button id="getUserAccounts">Получить</button>
+        <button id="hideAccountsBtn">Скрыть</button>
+        <span id="accountsList"></span>
+
+    </div>
+
+    <hr>
+
+      <div id="responseSection"></div>
+
+ <script>
+    document.getElementById('getMyDataBtn').addEventListener('click', async function() {
+        const response = await fetch('/admin/my_info');
+        if (response.ok) {
+            const myData = await response.json();
+            document.getElementById('myData').innerText = JSON.stringify(myData);
+        } else {
+            alert('Не удалось получить информацию о себе');
+        }
+    });
+
+    document.getElementById('createUserBtn').addEventListener('click', async function() {
+
+        const email = document.getElementById('createUserEmail').value;
+        const password = document.getElementById('createUserPassword').value;
+        const full_name = document.getElementById('createUserFullName').value;
+        const response = await fetch('/admin/create_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, full_name }),
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            alert(`${result.status}`);
+        } else {
+            alert(`${result.status}`);
+        }
+    });
+
+      document.getElementById('deleteUserBtn').addEventListener('click', async function() {
+
+        const email = document.getElementById('deleteUserEmail').value;
+        const response = await fetch('/admin/delete_user', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }),
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            alert(`${result.status}`);
+        } else {
+            alert(`${result.status}`);
+        }
+    });
+
+      document.getElementById('updateUserBtn').addEventListener('click', async function() {
+       const user_email = document.getElementById('UserEmail').value;
+       const email = document.getElementById('updateUserEmail').value;
+       const password = document.getElementById('updateUserPassword').value;
+       const full_name = document.getElementById('updateUserFullName').value;
+        const response = await fetch('/admin/update_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_email, email, password, full_name }),
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            alert(`${result.status}`);
+        } else {
+            alert(`${result.status}`);
+        }
+    });
+
+      document.getElementById('getAllUsers').addEventListener('click', async function() {
+        const response = await fetch('/admin/get_users');
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            const users = await data;
+            const usersListElement = document.getElementById('usersList');
+            usersListElement.innerHTML = '';
+
+            users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.classList.add('user-item');
+
+                for (const key in user) {
+                    if (user.hasOwnProperty(key)) {
+                        const p = document.createElement('p');
+                        p.innerHTML = `<strong>${key}:</strong> ${user[key]}`;
+                        userDiv.appendChild(p);
+                    }
+                }
+
+                usersListElement.appendChild(userDiv);
+                usersListElement.appendChild(document.createElement('hr'));
+            });
+        } else {
+            alert(`${data.status}`);
+        }
+    });
+
+    document.getElementById('hideUsersBtn').addEventListener('click', async function() {
+        document.getElementById('usersList').innerText = '';
+    });
+
+
+    document.getElementById('getUserAccounts').addEventListener('click', async function() {
+        const email = document.getElementById('getAccountsUserEmail').value;
+        const response = await fetch('/admin/get_users_accounts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({email}),
+        });
+
+        const data = await response.json();
+        console.log(data)
+        const accountsListElement = document.getElementById('accountsList');
+        accountsListElement.innerHTML = '';
+
+        if (Array.isArray(data)) {
+            data.forEach(account => {
+                const accountDiv = document.createElement('div');
+                accountDiv.classList.add('account-item');
+
+                for (const key in account) {
+                    if (account.hasOwnProperty(key)) {
+                        const p = document.createElement('p');
+                        p.innerHTML = `<strong>${key}:</strong> ${account[key]}`;
+                        accountDiv.appendChild(p);
+                    }
+                }
+                accountsListElement.appendChild(accountDiv);
+                accountsListElement.appendChild(document.createElement('hr'));
+            });
+        } else {
+            alert(`${data.status}`);
+        }
+    });
+
+    document.getElementById('hideAccountsBtn').addEventListener('click', async function() {
+        document.getElementById('accountsList').innerText = '';
+    });
+
+</script>
+
+</body>
+</html>

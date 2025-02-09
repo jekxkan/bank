@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в аккаунт</title>
+</head>
+<body>
+    <h1>Вход в аккаунт</h1>
+
+    <form id="loginForm">
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" required><br><br>
+
+        <label for="password">Пароль:</label>
+        <input type="text" id="password" name="password" required><br><br>
+
+        <button type="submit">Войти</button>
+    </form>
+
+    <h1>Протестировать платеж</h1>
+
+    <form id="paymentForm" action="/webhook" method="GET">
+    <button type="submit">Протестировать</button>
+    </form>
+
+<script>
+document.getElementById('paymentForm').addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  window.location.href = '/webhook';
+});
+</script>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            const jsonData = JSON.stringify(data);
+
+            try {
+               const response = await fetch('/auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: jsonData
+                });
+
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    const data = await response.json()
+                    alert(`Ошибка при входе: ${data.status || data.error}`);
+                }
+            } catch (error) {
+                alert('Произошла ошибка при отправке запроса');
+            }
+        });
+
+        document.getElementById('paymentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            window.location.href = '/webhook';
+        });
+    </script>
+</body>
+</html>

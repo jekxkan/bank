@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webhook Test Form</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 300px;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Webhook Test Form</h1>
+
+    <form id="webhookForm">
+        <label for="transaction_id">Transaction ID:</label>
+        <input type="text" id="transaction_id" name="transaction_id" required>
+
+        <label for="user_id">User ID:</label>
+        <input type="number" id="user_id" name="user_id" required>
+
+        <label for="account_id">Account ID:</label>
+        <input type="number" id="account_id" name="account_id" required>
+
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" required>
+
+        <label for="signature">Signature:</label>
+        <input type="text" id="signature" name="signature" required>
+
+        <button type="submit">Send Webhook</button>
+    </form>
+
+    <div id="response"></div>
+
+    <script>
+        const form = document.getElementById('webhookForm');
+        const responseDiv = document.getElementById('response');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const payload = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/webhook', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                responseDiv.textContent = JSON.stringify(data)
+            } catch (error) {
+                alert('Ошибка');
+            }
+        });
+    </script>
+</body>
+</html>
